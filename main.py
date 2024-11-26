@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from hubspot import HubSpot
 from hubspot.crm.contacts import ApiException, Filter, FilterGroup, PublicObjectSearchRequest, SimplePublicObjectInput
 
-
 # TODO: [COMPLETE] Authorize w/ Hubspot-They have a library!
 HUBSPOT_ACCESS_TOKEN = os.environ['HUBSPOT_ACCESS_TOKEN']
 HUBSPOT_SECRET = os.environ['HUBSPOT_SECRET']
@@ -17,12 +16,11 @@ PORT = 993
 HOST = "idhoops.com"
 VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 Weekday Shooting & Dribbling',
                 'Level 2 Weekday Shooting & Dribbling', 'Party Attendee', 'Prospect', '2021Junior Hoopers',
-                'Robbinsville Coaches Clinic', 'Schools Out']
-
+                'Robbinsville Coaches Clinic', 'Schools Out', 'Free Pass Registration- Adult Basketball Fitness Class']
 
 answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration program!\n\n"
-               "Would you like to run in Manual Mode? (type 'y' for yes or 'n' for no)\n\n"
-               "(Manual Mode requires a manual approval for completely NEW contacts to be created within Hubspot"
+               "Would you like to run in Safe Mode (recommended)? (type 'y' for yes or 'n' for no)\n\n"
+               "(Safe Mode requires a manual approval for completely NEW contacts to be created within Hubspot"
                " and for any property to be updated.\nIf you decline, the script will run in Automatic Mode, and all "
                "new contacts will be automatically created.)\n").lower()
 
@@ -33,18 +31,136 @@ elif answer == 'n':
     is_manual = False
     print("Running in automatic...")
 
-
 api_client = HubSpot(access_token=HUBSPOT_ACCESS_TOKEN)
 
+# TODO: Make a func that will automatically update existing contacts (manual func w/out inputs)
 
-# TODO: make a Manual Mode that requires permission to update contacts
+
+# TODO: Create feature for adding new contacts into Hubspot
+def newbies(client, firstname, lastname):
+    bday = client.childdob
+    if isadult(bday):
+        client.childdob = "Adult"
+    if client.group in VALID_GROUPS:
+        if client.group not in ["Party Attendee", "Prospect", "Free Pass Registration- Adult Basketball Fitness Class"]:
+            try:
+                contact_data = SimplePublicObjectInput(
+                    properties={
+                        "firstname": firstname,
+                        "lastname": lastname,
+                        "email": client.email,
+                        "mobilephone": client.phone,
+                        "kid_s_year_s_of_birth": client.childdob,
+                        "kids_names": client.childname,
+                        "address": client.address,
+                        "city": client.city,
+                        "zip": client.zip,
+                        "state": client.state,
+                        'clinics_classes': client.group
+                    }
+                )
+                api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
+
+                print(f"Successfully created Hubspot contact for new client {client.name} at {client.email}!!!")
+                print("Here is the full contact Data")
+                print(f"First Name: {firstname}")
+                print(f"Last Name: {lastname}")
+                print(f"Email {client.email}")
+                print(f"Mobile Phone: {client.phone}")
+                print(f"Address: {client.address}")
+                print(f"City: {client.city}")
+                print(f"State: {client.state}")
+                print(f"Zip: {client.zip}")
+                print(f"Kid's Name(s): {client.childname}")
+                print(f"Kid's YoB: {client.childdob}")
+                print(f"Group: {client.group}")
+
+            except ApiException as e:
+                print(f"Failed to create contact! Error: {e}")
+        else:
+            try:
+                contact_data = SimplePublicObjectInput(
+                    properties={
+                        "firstname": firstname,
+                        "lastname": lastname,
+                        "email": client.email,
+                        "mobilephone": client.phone,
+                        "kid_s_year_s_of_birth": client.childdob,
+                        "kids_names": client.childname,
+                        "address": client.address,
+                        "city": client.city,
+                        "zip": client.zip,
+                        "state": client.state,
+                        'facility_tour': client.group
+                    }
+                )
+                api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
+
+                print(f"Successfully created Hubspot contact for new client {client.name} at {client.email}!!!")
+
+                print("Here is the full contact Data")
+                print(f"First Name: {firstname}")
+                print(f"Last Name: {lastname}")
+                print(f"Email {client.email}")
+                print(f"Mobile Phone: {client.phone}")
+                print(f"Address: {client.address}")
+                print(f"City: {client.city}")
+                print(f"State: {client.state}")
+                print(f"Zip: {client.zip}")
+                print(f"Kid's Name(s): {client.childname}")
+                print(f"Kid's YoB: {client.childdob}")
+                print(f"Group: {client.group}")
+
+            except ApiException as e:
+                print(f"Failed to create contact! Error: {e}")
+    else:
+        print(f"NOTICE!!!!\nThe group {client.group} is not configured to be added programmatically,"
+              f" and will be omitted from the contact creation.\nEither tag the client under the group {client.group} "
+              f"manually in Hubspot, or have it configured internally.")
+        try:
+            contact_data = SimplePublicObjectInput(
+                properties={
+                    "firstname": firstname,
+                    "lastname": lastname,
+                    "email": client.email,
+                    "mobilephone": client.phone,
+                    "kid_s_year_s_of_birth": client.childdob,
+                    "kids_names": client.childname,
+                    "address": client.address,
+                    "city": client.city,
+                    "zip": client.zip,
+                    "state": client.state,
+                }
+            )
+            api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
+
+            print(f"Successfully created Hubspot contact for new client {client.name} at {client.email}!!!")
+
+            print("Here is the full contact Data")
+            print(f"First Name: {firstname}")
+            print(f"Last Name: {lastname}")
+            print(f"Email {client.email}")
+            print(f"Mobile Phone: {client.phone}")
+            print(f"Address: {client.address}")
+            print(f"City: {client.city}")
+            print(f"State: {client.state}")
+            print(f"Zip: {client.zip}")
+            print(f"Kid's Name(s): {client.childname}")
+            print(f"Kid's YoB: {client.childdob}")
+
+        except ApiException as e:
+            print(f"Failed to create contact! Error: {e}")
+
+
+# TODO: Make a Manual Mode that requires permission to update contacts [TODO]
 def manual_mode(client, contact, firstname, lastname):
     contact_id = contact.id
 
     # UPDATING FIRST NAME
 
     if firstname == contact.properties['firstname']:
-        print(f'{firstname} is equal to {contact.properties['firstname']}, moving on...')
+        print(f'Submitted first name {firstname} is equal to Hubspot first name {contact.properties['firstname']}\n'
+              f'Moving on...')
     else:
         answer = input(f"{firstname} does not match the Hubspot record of {contact.properties['firstname']}.\n"
                        f"Would you like to change the 'firstname' value to {firstname}?\n"
@@ -70,7 +186,8 @@ def manual_mode(client, contact, firstname, lastname):
     # UPDATING LAST NAME
 
     if lastname == contact.properties['lastname']:
-        print(f'{lastname} is equal to {contact.properties['lastname']}, moving on...')
+        print(f'Submitted last name {lastname} is equal to Hubspot last name {contact.properties['lastname']}\n'
+              f'Moving on...')
     else:
         answer = input(f"{lastname} does not match the Hubspot record of {contact.properties['lastname']}.\n"
                        f"Would you like to change the 'lastname' value to {lastname}?\n"
@@ -153,26 +270,26 @@ def manual_mode(client, contact, firstname, lastname):
     if client.childdob:
         if isadult(client.childdob):
             if contact.properties['kid_s_year_s_of_birth'].strip() is None:
-                    answer = input(f"No age is set--update age to Adult for {client.name}?\n"
-                                   f"Type 'y' for yes or 'n' for no. ").lower()
-                    if answer == 'y':
-                        try:
-                            print('Updating age...')
-                            new_info = "Adult"
-                            updated_info = SimplePublicObjectInput(
-                               properties={
-                                    'kid_s_year_s_of_birth': new_info
-                                }
-                            )
-                            api_client.crm.contacts.basic_api.update(
-                                contact_id=contact_id,
-                                simple_public_object_input=updated_info
-                            )
-                            print("Age successfully updated, moving on...")
-                        except ApiException as e:
-                            print(f"Updating error: {e}, skipping...")
-                    else:
-                        print("Very well, moving on...")
+                answer = input(f"No age is set--update age to Adult for {client.name}?\n"
+                               f"Type 'y' for yes or 'n' for no. ").lower()
+                if answer == 'y':
+                    try:
+                        print('Updating age...')
+                        new_info = "Adult"
+                        updated_info = SimplePublicObjectInput(
+                            properties={
+                                'kid_s_year_s_of_birth': new_info
+                            }
+                        )
+                        api_client.crm.contacts.basic_api.update(
+                            contact_id=contact_id,
+                            simple_public_object_input=updated_info
+                        )
+                        print("Age successfully updated\nMoving on...")
+                    except ApiException as e:
+                        print(f"Updating error: {e}, skipping...")
+                else:
+                    print("Very well, moving on...")
             else:
                 try:
                     bdays = contact.properties['kid_s_year_s_of_birth'].split(";")
@@ -193,7 +310,7 @@ def manual_mode(client, contact, firstname, lastname):
                                     contact_id=contact_id,
                                     simple_public_object_input=updated_info
                                 )
-                                print("Adult status appended to Child's ages. Moving on...")
+                                print("Adult status appended to Child's ages, moving on...")
                             except ApiException as e:
                                 print(f"Updating error: {e}, skipping...")
                         else:
@@ -201,7 +318,7 @@ def manual_mode(client, contact, firstname, lastname):
 
                 except AttributeError:
                     if contact.properties['kid_s_year_s_of_birth'] == 'Adult':
-                        print("Adult status up to date. Moving on...")
+                        print("Adult status up to date, moving on...")
                     else:
                         answer = input(f"Adult status is not listed in the Age property: "
                                        f"{contact.properties['kid_s_year_s_of_birth']}.\n Add Adult status? Type "
@@ -219,7 +336,7 @@ def manual_mode(client, contact, firstname, lastname):
                                     contact_id=contact_id,
                                     simple_public_object_input=updated_info
                                 )
-                                print("Adult status appended to Child's ages. Moving on...")
+                                print("Adult status appended to Child's ages, moving on...")
                             except ApiException as e:
                                 print(f"Updating error: {e}, skipping...")
                         else:
@@ -232,10 +349,11 @@ def manual_mode(client, contact, firstname, lastname):
                     try:
                         list_of_bdays = contact.properties['kid_s_year_s_of_birth'].split(";")
                         if bday_year in list_of_bdays:
-                            print(f"Birthday up to date: {bday_year} is in {list_of_bdays}. Moving on...")
+                            print(f"Birthday up to date: {bday_year} is in {list_of_bdays}, moving on...")
                         else:
-                            answer = input(f"Birthday year {bday_year} not found in Hubspot entered Bday years: {list_of_bdays}.\n"
-                                           f"Would you like to update the list? 'y' for yes, 'n' for no. ").lower()
+                            answer = input(
+                                f"Birthday year {bday_year} not found in Hubspot entered Bday years: {list_of_bdays}.\n"
+                                f"Would you like to update the list? 'y' for yes, 'n' for no. ").lower()
                             if answer == 'y':
                                 print("Very well. Updating bdays...")
                                 try:
@@ -365,13 +483,13 @@ def manual_mode(client, contact, firstname, lastname):
     if client.zip:
         if contact.properties['zip'] is not None:
             if client.zip == contact.properties['zip']:
-                print(f"Submitted zip code {client.zip} matches Hubspot zip code {contact.properties['zip']}.\n"
-                      f"Moving on...")
+                print(f"Submitted zip code {client.zip} matches Hubspot zip code {contact.properties['zip']}.")
+                print("Moving on...")
             else:
-                answer = input(f"Submitted zip {client.zip} does not match the Hubspot zip code"
-                               f" {contact.properties['zip']}."
-                               f"Would you like to update the Hubspot value to {client.zip}?"
-                               f"Type 'y' for yes or 'n' for no. ").lower()
+                answer = input(
+                    f"Submitted zip {client.zip} does not match the Hubspot zip code {contact.properties['zip']}."
+                    f"Would you like to update the Hubspot value to "
+                    f"{client.zip}? Type 'y' for yes or 'n' for no: ").lower()
                 if answer == 'y':
                     print("Very well, updating zip code...")
                     try:
@@ -411,13 +529,13 @@ def manual_mode(client, contact, firstname, lastname):
 
     if client.city:
         if contact.properties['city'] is not None:
-            if client.city == contact.properties['city']:
-                print(f"Submitted city {client.city} matches Hubspot city {contact.properties['city']}.\n"
+            hspot_city = contact.properties['city'].strip()
+            if client.city == hspot_city:
+                print(f"Submitted city {client.city} matches Hubspot city {hspot_city}.\n"
                       f"Moving on...")
             else:
-                answer = input(f"Submitted city {client.city} does not match the Hubspot city "
-                               f"{contact.properties['city']}."
-                               f"Would you like to update the Hubspot value to {client.city}?"
+                answer = input(f"Submitted city {client.city}does not match the Hubspot city: {hspot_city}. "
+                               f"Would you like to update the Hubspot value to city? "
                                f"Type 'y' for yes or 'n' for no. ").lower()
                 if answer == 'y':
                     print("Very well, updating city...")
@@ -457,7 +575,6 @@ def manual_mode(client, contact, firstname, lastname):
         print(f"No city submitted for {client.name}. Moving to next property...")
 
     # UPDATING STATE
-
     if client.state:
         if contact.properties['state'] is not None:
             if client.state == contact.properties['state']:
@@ -465,8 +582,8 @@ def manual_mode(client, contact, firstname, lastname):
                       f"Moving on...")
             else:
                 answer = input(f"Submitted state {client.state} does not match the Hubspot state "
-                               f"{contact.properties['state']}."
-                               f"\nWould you like to update the Hubspot value to {client.state}?"
+                               f"{contact.properties['state'].rstrip()}. "
+                               f"Would you like to update the Hubspot value to {client.state}?"
                                f"Type 'y' for yes or 'n' for no.").lower()
                 if answer == 'y':
                     print("Very well, updating state...")
@@ -507,7 +624,8 @@ def manual_mode(client, contact, firstname, lastname):
 
     if client.group:
         if client.group in VALID_GROUPS:
-            if client.group == 'Party Attendee' or client.group == 'Prospect':
+            if (client.group == 'Party Attendee' or client.group == 'Prospect' or
+                    client.group == 'Free Pass Registration- Adult Basketball Fitness Class'):
                 if contact.properties['facility_tour'] is not None:
                     try:
                         prosplist = contact.properties['facility_tour'].split(';')
@@ -538,7 +656,7 @@ def manual_mode(client, contact, firstname, lastname):
                         if client.group == contact.properties['facility_tour']:
                             print(f"{client.group} is equal to {contact.properties['facility_tour']}. Moving on...")
                         else:
-                            answer = input(f"{client.group} is not equal to {contact.properties['facility_tour']}." 
+                            answer = input(f"{client.group} is not equal to {contact.properties['facility_tour']}."
                                            f"Would you like to append {client.group} to the list? "
                                            f"Type 'y' for yes or 'n' for no. ").lower()
                             if answer == 'y':
@@ -708,14 +826,14 @@ def infograbber(items):  # Creating function to handle email formatting discrepa
                     group = '2021 Pure Fundamentals'
                 elif 'Level' in true_group:
                     id = true_group.index('Level')
-                    if true_group[id+1] == '1':
-                        if true_group[id+2] == 'Shooting':
+                    if true_group[id + 1] == '1':
+                        if true_group[id + 2] == 'Shooting':
                             group = 'Level 1 Weekday Shooting & Dribbling'
-                    elif true_group[id+1] == '2':
-                        if true_group[id+2] == 'Shooting':
+                    elif true_group[id + 1] == '2':
+                        if true_group[id + 2] == 'Shooting':
                             group = 'Level 2 Weekday Shooting & Dribbling'
             group = internalcode(group)
-            name = items[index+1]
+            name = items[index + 1]
             name = name[9:].strip()
             formatting = name.split()  # Ensuring names are properly capitalized
             for str in formatting:
@@ -723,7 +841,7 @@ def infograbber(items):  # Creating function to handle email formatting discrepa
                 str1.strip()
                 formatting[formatting.index(str)] = str1
             name = " ".join(formatting)
-            address = items[index+2]
+            address = items[index + 2]
             address = address[9:]
             formatting = address.split()
             for str in formatting:  # Ensuring addresses are properly capitalized
@@ -731,20 +849,29 @@ def infograbber(items):  # Creating function to handle email formatting discrepa
                 str1.strip()
                 formatting[formatting.index(str)] = str1
             address = " ".join(formatting)
-            city = items[index+3]
-            city = city[6:].capitalize()
-            state = items[index+4]
+            address = address.strip()
+            city = items[index + 3]
+            city = city[6:]
+            formatting = city.split()
+            for str in formatting:  # Doing the same formatting for city. Should make func but lazy
+                str1 = str.capitalize()
+                str1.strip()
+                formatting[formatting.index(str)] = str1
+            city = " ".join(formatting)
+            city = city.strip()
+            state = items[index + 4]
             state = state[7:].upper()
-            zip = items[index+5]
-            zip = zip[5:]
-            phone = items[index+9]
+            state = state.strip()
+            zip = items[index + 5]
+            zip = zip[5:].strip()
+            phone = items[index + 9]
             phone = phone[12:].strip()
-            email = items[index+10].lower()
+            email = items[index + 10].lower()
             email = email[7:].strip()
-            parent = items[index+12]
-            parent = parent[24:]
-            bday = items[index+15]
-            bday = bday[15:]
+            parent = items[index + 12]
+            parent = parent[24:].strip()
+            bday = items[index + 15]
+            bday = bday[15:].strip()
             if isadult(bday):
                 client = Contact(email=email, name=name, group=group, phone=phone, address=address,
                                  city=city, state=state, zip=zip, childname=" ", childdob=bday)
@@ -787,10 +914,8 @@ server = IMAPClient(host=HOST, port=PORT, use_uid=True)
 server.login(username=USER, password=PASS)
 server.select_folder(folder="INBOX")
 
-
 # TODO: Fetch registration emails from roundcube in form of UIDs [COMPLETE]
 messages = server.search(['Subject', 'A NEW ONLINE REGISTRATION HAS BEEN SUBMITTED', 'Since', fetch_date], 'UTF8')
-
 
 # TODO: Loop through list of clients and create objects for each of them, adding said objects to a list [COMPLETE]
 for message in messages:
@@ -807,7 +932,7 @@ for message in messages:
 # TODO Connect with Hubspot's API [COMPLETE], Ensure relevant properties are fetched [COMPLETE]
 def contactmaker(all_clients):
     for client in all_clients:
-        email = client.email    # The weird '.' return for some clients, despite having their emails in the DB,
+        email = client.email  # The weird '.' return for some clients, despite having their emails in the DB,
         # was caused by whitespace in the email
         name = client.name.split()
         firstname = name[0] if len(name) > 0 else ""
@@ -824,7 +949,7 @@ def contactmaker(all_clients):
                 filter_groups=[filter_group],
                 properties=['firstname', 'lastname', 'mobilephone', 'email', "kids_names", "kid_s_year_s_of_birth",
                             "clinics_classes", "facility_tour", "former_member", "address", "city", "state", "zip"]
-                )
+            )
 
             try:
                 response = api_client.crm.contacts.search_api.do_search(public_object_search_request=search_request)
@@ -841,12 +966,13 @@ def contactmaker(all_clients):
                                        f"\nType 'y' for yes or 'n' for no. ").lower()
                         if answer == 'y':
                             print(f"Creating Hubspot contact for {client.email}")
-                            # make manual_mode() func for NEW clients
+                            newbies(client, firstname, lastname)
                         elif answer == 'n':
                             print(f"SKIPPING Hubspot contact creation for {client.email}")
                     else:
                         # automatic mode here
-                        print("Automatic mode under construction. Doing nothing!")
+                        print(f"Creating Hubspot contact for {client.email}")
+                        newbies(client, firstname, lastname)
             except ApiException as e:
                 print(f"An error occurred while searching for {client.name}: {e}")
         else:
@@ -854,4 +980,4 @@ def contactmaker(all_clients):
 
 
 contactmaker(all_clients)
-# How do I compare and contrast properties?
+
