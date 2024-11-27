@@ -16,7 +16,8 @@ PORT = 993
 HOST = "idhoops.com"
 VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 Weekday Shooting & Dribbling',
                 'Level 2 Weekday Shooting & Dribbling', 'Party Attendee', 'Prospect', '2021Junior Hoopers',
-                'Robbinsville Coaches Clinic', 'Schools Out', 'Free Pass Registration- Adult Basketball Fitness Class']
+                'Robbinsville Coaches Clinic', 'Schools Out', 'Free Pass Registration- Adult Basketball Fitness Class',
+                'Pick-Up Adults (30+)']
 
 answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration program!\n\n"
                "Would you like to run in Safe Mode (recommended)? (type 'y' for yes or 'n' for no)\n\n"
@@ -41,6 +42,11 @@ def newbies(client, firstname, lastname):
     bday = client.childdob
     if isadult(bday):
         client.childdob = "Adult"
+    else:
+        if client.childdob is not None:
+            bday = client.childdob.split()
+            bday_year = bday[3].strip()
+            client.childdob = bday_year
     if client.group in VALID_GROUPS:
         if client.group not in ["Party Attendee", "Prospect", "Free Pass Registration- Adult Basketball Fitness Class"]:
             try:
@@ -56,7 +62,8 @@ def newbies(client, firstname, lastname):
                         "city": client.city,
                         "zip": client.zip,
                         "state": client.state,
-                        'clinics_classes': client.group
+                        'clinics_classes': client.group,
+                        'hubspot_owner_id': 62963475
                     }
                 )
                 api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
@@ -91,7 +98,8 @@ def newbies(client, firstname, lastname):
                         "city": client.city,
                         "zip": client.zip,
                         "state": client.state,
-                        'facility_tour': client.group
+                        'facility_tour': client.group,
+                        'hubspot_owner_id': 62963475
                     }
                 )
                 api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
@@ -130,6 +138,7 @@ def newbies(client, firstname, lastname):
                     "city": client.city,
                     "zip": client.zip,
                     "state": client.state,
+                    'hubspot_owner_id': 62963475
                 }
             )
             api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
@@ -159,8 +168,8 @@ def manual_mode(client, contact, firstname, lastname):
     # UPDATING FIRST NAME
 
     if firstname == contact.properties['firstname']:
-        print(f'Submitted first name {firstname} is equal to Hubspot first name {contact.properties['firstname']}\n'
-              f'Moving on...')
+        print(f'Submitted first name {firstname} is equal to Hubspot first name {contact.properties['firstname']},'
+              f' moving on...')
     else:
         answer = input(f"{firstname} does not match the Hubspot record of {contact.properties['firstname']}.\n"
                        f"Would you like to change the 'firstname' value to {firstname}?\n"
@@ -177,43 +186,46 @@ def manual_mode(client, contact, firstname, lastname):
                     contact_id=contact_id,
                     simple_public_object_input=updated_info
                 )
-                print("Contact updated successfully!")
+                print(f"Contact updated successfully! Value {firstname} written to Hubspot firstname property, "
+                      f"moving on...")
             except ApiException as e:
                 print(f"Failed to update contact: {e}")
         else:
-            print("Very well, doing nothing for the first name property...")
+            print("Very well, doing nothing for the first name property...\nMoving on...")
 
     # UPDATING LAST NAME
-
-    if lastname == contact.properties['lastname']:
-        print(f'Submitted last name {lastname} is equal to Hubspot last name {contact.properties['lastname']}\n'
-              f'Moving on...')
-    else:
-        answer = input(f"{lastname} does not match the Hubspot record of {contact.properties['lastname']}.\n"
-                       f"Would you like to change the 'lastname' value to {lastname}?\n"
-                       f"Type 'y' for yes or 'n' for no. ").lower()
-        if answer == 'y':
-            print("Very well. Updating 'firstname' info...")
-            try:
-                updated_info = SimplePublicObjectInput(
-                    properties={
-                        'lastname': lastname
-                    }
-                )
-                api_client.crm.contacts.basic_api.update(
-                    contact_id=contact_id,
-                    simple_public_object_input=updated_info
-                )
-                print("Contact updated successfully!")
-            except ApiException as e:
-                print(f"Failed to update contact: {e}")
+    if lastname:
+        if lastname == contact.properties['lastname']:
+            print(f'Submitted last name {lastname} is equal to Hubspot last name {contact.properties['lastname']}, '
+                  f'moving on...')
         else:
-            print("Very well, doing nothing for the last name property...")
+            answer = input(f"{lastname} does not match the Hubspot record of {contact.properties['lastname']}.\n"
+                           f"Would you like to change the 'lastname' value to {lastname}?\n"
+                           f"Type 'y' for yes or 'n' for no. ").lower()
+            if answer == 'y':
+                print("Very well. Updating 'firstname' info...")
+                try:
+                    updated_info = SimplePublicObjectInput(
+                        properties={
+                            'lastname': lastname
+                        }
+                    )
+                    api_client.crm.contacts.basic_api.update(
+                        contact_id=contact_id,
+                        simple_public_object_input=updated_info
+                    )
+                    print(f"Contact updated successfully! Value {lastname} written to Hubspot lastname property.")
+                except ApiException as e:
+                    print(f"Failed to update contact: {e}")
+            else:
+                print("Very well, doing nothing for the last name property...\nMoving on...")
+    else:
+        print(f"No last name entered for {client.name}, moving on...")
 
     # UPDATING EMAIL
 
     if client.email == contact.properties['email']:
-        print(f'{client.email} is equal to {contact.properties['email']}, moving on...')
+        print(f'{client.email} is equal to Hubspot email value {contact.properties['email']}, moving on...')
     else:
         answer = input(f"{client.email} does not match the Hubspot record of {contact.properties['email']}.\n"
                        f"Would you like to change the 'email' value to {client.email}?\n"
@@ -230,17 +242,18 @@ def manual_mode(client, contact, firstname, lastname):
                     contact_id=contact_id,
                     simple_public_object_input=updated_info
                 )
-                print("Contact updated successfully!")
+                print(f"Contact updated successfully! Value {client.email} added to Hubspot email property, "
+                      f"moving on..")
             except ApiException as e:
                 print(f"Failed to update contact: {e}")
         else:
-            print("Very well, doing nothing for the email property...")
+            print("Very well, doing nothing for the email property...\nMoving on...")
 
     # UPDATING MOBILEPHONE
 
     if client.phone:
         if client.phone == contact.properties['mobilephone']:
-            print(f'{client.phone} is equal to {contact.properties['mobilephone']}, moving on...')
+            print(f'{client.phone} is equal to Hubspot phone value {contact.properties['mobilephone']}, moving on...')
         else:
             answer = input(f"{client.phone} does not match the Hubspot record of {contact.properties['mobilephone']}.\n"
                            f"Would you like to change the 'mobilephone' value to {client.phone}?\n"
@@ -257,13 +270,14 @@ def manual_mode(client, contact, firstname, lastname):
                         contact_id=contact_id,
                         simple_public_object_input=updated_info
                     )
-                    print("Contact updated successfully!")
+                    print(f"Contact updated successfully! Value {client.phone} added to Hubspot phone property.\n"
+                          f"Moving on...")
                 except ApiException as e:
                     print(f"Failed to update contact: {e}")
             else:
-                print("Very well, doing nothing for the mobile phone property...")
+                print("Very well, doing nothing for the mobile phone property...\nMoving on...")
     else:
-        print(f"No phone number entered in {client.name}'s registration form. Moving on to next property...")
+        print(f"No phone number entered in {client.name}'s registration form, moving on...")
 
     # UPDATING KID'S YEAR OF BIRTH
 
@@ -285,7 +299,7 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("Age successfully updated\nMoving on...")
+                        print("Age successfully updated, moving on...")
                     except ApiException as e:
                         print(f"Updating error: {e}, skipping...")
                 else:
@@ -294,13 +308,13 @@ def manual_mode(client, contact, firstname, lastname):
                 try:
                     bdays = contact.properties['kid_s_year_s_of_birth'].split(";")
                     if 'Adult' in bdays:
-                        print("Age up to date. Moving on...")
+                        print("Age up to date, moving on...")
                     else:
                         answer = input(f"Age is missing from Hubspot ages--append Adult status to ages?\n"
                                        f"Type 'y' for yes or 'n' for no. ").lower()
                         if answer == 'y':
                             try:
-                                new_info = contact.properties['kid_s_year_s_of_birth'] + ";Adult"
+                                new_info = contact.properties['kid_s_year_s_of_birth'].append(";Adult")
                                 updated_info = SimplePublicObjectInput(
                                     properties={
                                         'kid_s_year_s_of_birth': new_info
@@ -310,7 +324,7 @@ def manual_mode(client, contact, firstname, lastname):
                                     contact_id=contact_id,
                                     simple_public_object_input=updated_info
                                 )
-                                print("Adult status appended to Child's ages, moving on...")
+                                print("Adult status appended to Child's ages! Moving on...")
                             except ApiException as e:
                                 print(f"Updating error: {e}, skipping...")
                         else:
@@ -342,10 +356,10 @@ def manual_mode(client, contact, firstname, lastname):
                         else:
                             print("Very well, not updating Age properties and moving on...")
         else:
-            if client.childdob:
+            if client.childdob is not None:
                 if contact.properties['kid_s_year_s_of_birth'] is not None:
                     bday = client.childdob.split()
-                    bday_year = bday[3]
+                    bday_year = bday[3].strip()
                     try:
                         list_of_bdays = contact.properties['kid_s_year_s_of_birth'].split(";")
                         if bday_year in list_of_bdays:
@@ -357,16 +371,21 @@ def manual_mode(client, contact, firstname, lastname):
                             if answer == 'y':
                                 print("Very well. Updating bdays...")
                                 try:
-                                    new_info = list_of_bdays + f";{bday_year}"
+                                    list_of_bdays.append(bday_year)
+                                    new_info = list_of_bdays
+                                    data = ";".join(new_info)
+                                    # new_info = ";".join(new_info)
                                     updated_info = SimplePublicObjectInput(
                                         properties={
-                                            'kid_s_year_s_of_birth': new_info
+                                            'kid_s_year_s_of_birth': data
                                         }
                                     )
                                     api_client.crm.contacts.basic_api.update(
                                         contact_id=contact_id,
                                         simple_public_object_input=updated_info
                                     )
+                                    print(f"Bday successfully updated. Value {bday_year} added to Hubspot age property."
+                                          f"\nMoving to next property...")
                                 except ApiException as e:
                                     print(f"Skipping update, error: {e}")
                             else:
@@ -381,7 +400,9 @@ def manual_mode(client, contact, firstname, lastname):
                             if answer == 'y':
                                 print("Very well. Updating bdays...")
                                 try:
-                                    new_info = contact.properties['kid_s_year_s_of_birth'] + f";{bday_year}"
+                                    bday_info = contact.properties['kid_s_year_s_of_birth']
+                                    bday_info.append(bday_year)
+                                    new_info = ";".join(bday_info)
                                     updated_info = SimplePublicObjectInput(
                                         properties={
                                             'kid_s_year_s_of_birth': new_info
@@ -391,7 +412,8 @@ def manual_mode(client, contact, firstname, lastname):
                                         contact_id=contact_id,
                                         simple_public_object_input=updated_info
                                     )
-                                    print("Bday successfully updated. Moving to next property...")
+                                    print(f"Bday successfully updated. Value {bday_year} added to Hubspot age property."
+                                          f"\nMoving to next property...")
                                 except ApiException as e:
                                     print(f"Skipping update, error: {e}")
                             else:
@@ -407,6 +429,8 @@ def manual_mode(client, contact, firstname, lastname):
         else:
             children = contact.properties['kids_names'].split()
             commaname = client.childname + ","
+            print(type(commaname))
+            print(type(children))
             if client.childname or commaname in children:
                 print(f"{client.childname} already listed in {children}, moving on...")
             else:
@@ -415,7 +439,7 @@ def manual_mode(client, contact, firstname, lastname):
                 if answer == 'y':
                     print("Very well, updating child name info...")
                     try:
-                        new_info = contact.properties['kids_names'] + client.childname
+                        new_info = contact.properties['kids_names'] + f";{client.childname}"
                         updated_info = SimplePublicObjectInput(
                             properties={
                                 'kids_names': new_info
@@ -425,7 +449,8 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("Child names successfully updated. Moving to next property...")
+                        print(f"Child names successfully updated. Value {client.childname} added to Hubspot child's "
+                              f"name's property.\nMoving to next property...")
                     except ApiException as e:
                         print(f"Skipping update, error: {e}")
 
@@ -434,8 +459,8 @@ def manual_mode(client, contact, firstname, lastname):
     if client.address:
         if contact.properties['address'] is not None:
             if client.address == contact.properties['address']:
-                print(f"Submitted address {client.address} matches Hubspot address {contact.properties['address']}.\n"
-                      f"Moving on...")
+                print(f"Submitted address {client.address} matches Hubspot address {contact.properties['address']}, "
+                      f"moving on...")
             else:
                 answer = input(f"Submitted address {client.address} does not match the Hubspot address "
                                f"{contact.properties['address']}."
@@ -454,7 +479,8 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("Address successfully updated. Moving to next property...")
+                        print(f"Address successfully updated. Value {client.address} written to Hubspot address"
+                              f" property.\nMoving to next property...")
                     except ApiException as e:
                         print(f"Skipping update, error: {e}")
                 else:
@@ -472,7 +498,8 @@ def manual_mode(client, contact, firstname, lastname):
                     contact_id=contact_id,
                     simple_public_object_input=updated_info
                 )
-                print("Address successfully updated. Moving to next property...")
+                print(f"Address successfully updated. Value {client.address} written to Hubspot address property."
+                      f"\nMoving to next property...")
             except ApiException as e:
                 print(f"Skipping update, error: {e}")
     else:
@@ -503,7 +530,8 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("Zip code successfully updated. Moving to next property...")
+                        print(f"Zip code successfully updated. Value {client.zip} written to Hubspot zip code property."
+                              f"\nMoving to next property...")
                     except ApiException as e:
                         print(f"Skipping update, error: {e}")
         else:
@@ -519,7 +547,8 @@ def manual_mode(client, contact, firstname, lastname):
                     contact_id=contact_id,
                     simple_public_object_input=updated_info
                 )
-                print("Zip code successfully updated. Moving to next property...")
+                print(f"Zip code successfully updated. Value {client.zip} written to Hubspot zip code property.\n"
+                      "Moving to next property...")
             except ApiException as e:
                 print(f"Skipping update, error: {e}")
     else:
@@ -550,7 +579,8 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("City successfully updated. Moving to next property...")
+                        print(f"City successfully updated. Value {client.city} written to Hubspot city property."
+                              f"\nMoving to next property...")
                     except ApiException as e:
                         print(f"Skipping update, error: {e}")
                 else:
@@ -568,7 +598,8 @@ def manual_mode(client, contact, firstname, lastname):
                     contact_id=contact_id,
                     simple_public_object_input=updated_info
                 )
-                print("City successfully updated. Moving to next property...")
+                print(f"City successfully updated. Value {client.city} written to Hubspot city property."
+                      f"\nMoving to next property...")
             except ApiException as e:
                 print(f"Skipping update, error: {e}")
     else:
@@ -598,7 +629,8 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("State successfully updated. Moving to next property...")
+                        print(f"State successfully updated. Value {client.state} written to Hubspot state property.\n"
+                              "Moving to next property...")
                     except ApiException as e:
                         print(f"Skipping update, error: {e}")
         else:
@@ -614,7 +646,8 @@ def manual_mode(client, contact, firstname, lastname):
                     contact_id=contact_id,
                     simple_public_object_input=updated_info
                 )
-                print("State successfully updated. Moving to next property...")
+                print(f"State successfully updated. Value {client.state} written to Hubspot state property.\n"
+                      "Moving to next property...")
             except ApiException as e:
                 print(f"Skipping update, error: {e}")
     else:
@@ -647,7 +680,8 @@ def manual_mode(client, contact, firstname, lastname):
                                         contact_id=contact_id,
                                         simple_public_object_input=updated_info
                                     )
-                                    print("Group successfully added. Moving on...")
+                                    print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                                          f"profile for {client.name}!\nMoving on...")
                                 except ApiException as e:
                                     print(f"Group not updated. Error: {e}")
                             else:
@@ -671,7 +705,8 @@ def manual_mode(client, contact, firstname, lastname):
                                         contact_id=contact_id,
                                         simple_public_object_input=updated_info
                                     )
-                                    print("Group successfully added. Moving on...")
+                                    print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                                          f"profile for {client.name}!\nMoving on...")
                                 except ApiException as e:
                                     print(f"Group not updated. Error: {e}")
                             else:
@@ -690,7 +725,8 @@ def manual_mode(client, contact, firstname, lastname):
                             contact_id=contact_id,
                             simple_public_object_input=updated_info
                         )
-                        print("Group successfully added. Moving on...")
+                        print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                              f"profile for {client.name}!\nMoving on...")
                     except ApiException as e:
                         print(f"Group not updated. Error: {e}")
 
@@ -717,7 +753,8 @@ def manual_mode(client, contact, firstname, lastname):
                                     contact_id=contact_id,
                                     simple_public_object_input=updated_info
                                 )
-                                print("Group successfully updated. Moving to next property...")
+                                print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                                      f"profile for {client.name}!\nMoving on...")
                             except ApiException as e:
                                 print(f"Skipping update. Error: {e}")
                         else:
@@ -743,7 +780,8 @@ def manual_mode(client, contact, firstname, lastname):
                                     contact_id=contact_id,
                                     simple_public_object_input=updated_info
                                 )
-                                print("Group successfully updated. Moving to next property...")
+                                print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                                      f"profile for {client.name}!\nMoving on...")
                             except ApiException as e:
                                 print(f"Skipping update. Error: {e}")
                         else:
@@ -762,7 +800,8 @@ def manual_mode(client, contact, firstname, lastname):
                         contact_id=contact_id,
                         simple_public_object_input=updated_info
                     )
-                    print("Group successfully updated. Moving to next property...")
+                    print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                          f"profile for {client.name}!\nMoving on...")
                 except ApiException as e:
                     print(f"Skipping update. Error: {e}")
         else:
