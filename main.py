@@ -173,7 +173,7 @@ def manual_mode(client, contact, firstname, lastname):
     else:
         answer = input(f"{firstname} does not match the Hubspot record of {contact.properties['firstname']}.\n"
                        f"Would you like to change the 'firstname' value to {firstname}?\n"
-                       f"Type 'y' for yes or 'n' for no. ").lower()
+                       f"Type 'y' for yes or 'n' for no. ").lower().strip()
         if answer == 'y':
             print("Very well. Updating 'firstname' info...")
             try:
@@ -201,7 +201,7 @@ def manual_mode(client, contact, firstname, lastname):
         else:
             answer = input(f"{lastname} does not match the Hubspot record of {contact.properties['lastname']}.\n"
                            f"Would you like to change the 'lastname' value to {lastname}?\n"
-                           f"Type 'y' for yes or 'n' for no. ").lower()
+                           f"Type 'y' for yes or 'n' for no. ").lower().strip()
             if answer == 'y':
                 print("Very well. Updating 'firstname' info...")
                 try:
@@ -229,7 +229,7 @@ def manual_mode(client, contact, firstname, lastname):
     else:
         answer = input(f"{client.email} does not match the Hubspot record of {contact.properties['email']}.\n"
                        f"Would you like to change the 'email' value to {client.email}?\n"
-                       f"Type 'y' for yes or 'n' for no. ").lower()
+                       f"Type 'y' for yes or 'n' for no. ").lower().strip()
         if answer == 'y':
             print("Very well. Updating 'firstname' info...")
             try:
@@ -257,7 +257,7 @@ def manual_mode(client, contact, firstname, lastname):
         else:
             answer = input(f"{client.phone} does not match the Hubspot record of {contact.properties['mobilephone']}.\n"
                            f"Would you like to change the 'mobilephone' value to {client.phone}?\n"
-                           f"Type 'y' for yes or 'n' for no. ").lower()
+                           f"Type 'y' for yes or 'n' for no. ").lower().strip()
             if answer == 'y':
                 print("Very well. Updating 'mobile phone' info...")
                 try:
@@ -285,7 +285,7 @@ def manual_mode(client, contact, firstname, lastname):
         if isadult(client.childdob):
             if contact.properties['kid_s_year_s_of_birth'].strip() is None:
                 answer = input(f"No age is set--update age to Adult for {client.name}?\n"
-                               f"Type 'y' for yes or 'n' for no. ").lower()
+                               f"Type 'y' for yes or 'n' for no. ").lower().strip()
                 if answer == 'y':
                     try:
                         print('Updating age...')
@@ -311,7 +311,7 @@ def manual_mode(client, contact, firstname, lastname):
                         print("Age up to date, moving on...")
                     else:
                         answer = input(f"Age is missing from Hubspot ages--append Adult status to ages?\n"
-                                       f"Type 'y' for yes or 'n' for no. ").lower()
+                                       f"Type 'y' for yes or 'n' for no. ").lower().strip()
                         if answer == 'y':
                             try:
                                 new_info = contact.properties['kid_s_year_s_of_birth'].append(";Adult")
@@ -336,7 +336,7 @@ def manual_mode(client, contact, firstname, lastname):
                     else:
                         answer = input(f"Adult status is not listed in the Age property: "
                                        f"{contact.properties['kid_s_year_s_of_birth']}.\n Add Adult status? Type "
-                                       "'y' for yes or 'n' for no. ").lower()
+                                       "'y' for yes or 'n' for no. ").lower().strip()
                         if answer == 'y':
                             print("Very well. Adding Adult status to Age property...")
                             try:
@@ -367,7 +367,7 @@ def manual_mode(client, contact, firstname, lastname):
                         else:
                             answer = input(
                                 f"Birthday year {bday_year} not found in Hubspot entered Bday years: {list_of_bdays}.\n"
-                                f"Would you like to update the list? 'y' for yes, 'n' for no. ").lower()
+                                f"Would you like to update the list? 'y' for yes, 'n' for no. ").lower().strip()
                             if answer == 'y':
                                 print("Very well. Updating bdays...")
                                 try:
@@ -396,7 +396,8 @@ def manual_mode(client, contact, firstname, lastname):
                         else:
                             answer = input(
                                 f"Birthday year {bday_year} does not match Hubspot's bday year: {contact.properties['kid_s_year_s_of_birth']}.\n"
-                                f"Would you like to add {bday_year} to the property? 'y' for yes, 'n' for no. ").lower()
+                                f"Would you like to add {bday_year} to the property? 'y' for yes, "
+                                f"'n' for no. ").lower().strip()
                             if answer == 'y':
                                 print("Very well. Updating bdays...")
                                 try:
@@ -428,31 +429,50 @@ def manual_mode(client, contact, firstname, lastname):
             print(f"Adult registrant detected: {client.name}, skipping 'childname' property...")
         else:
             children = contact.properties['kids_names'].split()
-            commaname = client.childname + ","
-            print(type(commaname))
-            print(type(children))
-            if client.childname or commaname in children:
-                print(f"{client.childname} already listed in {children}, moving on...")
+            childname = client.childname.split()
+            childname = childname[0]
+            commaname = childname + ","
+            if children is not None:
+                if childname in children or commaname in children:
+                    print(f"{childname} already listed in {children}, moving on...")
+                else:
+                    answer = input(f"{childname} is not listed under 'kids_names' in Hubspot: {children}.\n"
+                                   f"Would you like to add {childname} to {children}? "
+                                   f"'y' for yes, 'n' for no. ").lower().strip()
+                    if answer == 'y':
+                        print("Very well, updating child name info...")
+                        try:
+                            new_info = contact.properties['kids_names'] + ", " + f"{childname}"
+                            updated_info = SimplePublicObjectInput(
+                                properties={
+                                    'kids_names': new_info
+                                }
+                            )
+                            api_client.crm.contacts.basic_api.update(
+                                contact_id=contact_id,
+                                simple_public_object_input=updated_info
+                            )
+                            print(f"Child names successfully updated. Value {childname} added to Hubspot child's "
+                                  f"name's property.\nMoving to next property...")
+                        except ApiException as e:
+                            print(f"Skipping update, error: {e}")
             else:
-                answer = input(f"{client.childname} is not listed under 'kids_names' in Hubspot: {children}.\n"
-                               f"Would you like to add {client.childname} to {children}? 'y' for yes, 'n' for no. ").lower()
-                if answer == 'y':
-                    print("Very well, updating child name info...")
-                    try:
-                        new_info = contact.properties['kids_names'] + f";{client.childname}"
-                        updated_info = SimplePublicObjectInput(
-                            properties={
-                                'kids_names': new_info
-                            }
-                        )
-                        api_client.crm.contacts.basic_api.update(
-                            contact_id=contact_id,
-                            simple_public_object_input=updated_info
-                        )
-                        print(f"Child names successfully updated. Value {client.childname} added to Hubspot child's "
-                              f"name's property.\nMoving to next property...")
-                    except ApiException as e:
-                        print(f"Skipping update, error: {e}")
+                print(f"No children detected for {client.name}. Adding {childname} to Hubspot property...")
+                try:
+                    new_info = contact.properties['kids_names'] + {childname}
+                    updated_info = SimplePublicObjectInput(
+                        properties={
+                            'kids_names': new_info
+                        }
+                    )
+                    api_client.crm.contacts.basic_api.update(
+                        contact_id=contact_id,
+                        simple_public_object_input=updated_info
+                    )
+                    print(f"Child names successfully updated. Value {childname} added to Hubspot child's "
+                          f"name's property.\nMoving to next property...")
+                except ApiException as e:
+                    print(f"Skipping update, error: {e}")
 
     # UPDATING ADDRESS
 
@@ -465,7 +485,7 @@ def manual_mode(client, contact, firstname, lastname):
                 answer = input(f"Submitted address {client.address} does not match the Hubspot address "
                                f"{contact.properties['address']}."
                                f"\nWould you like to update the Hubspot value to {client.address}? "
-                               f"Type 'y' for yes or 'n' for no. ").lower()
+                               f"Type 'y' for yes or 'n' for no. ").lower().strip()
                 if answer == 'y':
                     print("Very well, updating address...")
                     try:
@@ -516,7 +536,7 @@ def manual_mode(client, contact, firstname, lastname):
                 answer = input(
                     f"Submitted zip {client.zip} does not match the Hubspot zip code {contact.properties['zip']}."
                     f"Would you like to update the Hubspot value to "
-                    f"{client.zip}? Type 'y' for yes or 'n' for no: ").lower()
+                    f"{client.zip}? Type 'y' for yes or 'n' for no: ").lower().strip()
                 if answer == 'y':
                     print("Very well, updating zip code...")
                     try:
@@ -563,9 +583,9 @@ def manual_mode(client, contact, firstname, lastname):
                 print(f"Submitted city {client.city} matches Hubspot city {hspot_city}.\n"
                       f"Moving on...")
             else:
-                answer = input(f"Submitted city {client.city}does not match the Hubspot city: {hspot_city}. "
+                answer = input(f"Submitted city {client.city} does not match the Hubspot city: {hspot_city}. "
                                f"Would you like to update the Hubspot value to city? "
-                               f"Type 'y' for yes or 'n' for no. ").lower()
+                               f"Type 'y' for yes or 'n' for no. ").lower().strip()
                 if answer == 'y':
                     print("Very well, updating city...")
                     try:
@@ -615,7 +635,7 @@ def manual_mode(client, contact, firstname, lastname):
                 answer = input(f"Submitted state {client.state} does not match the Hubspot state "
                                f"{contact.properties['state'].rstrip()}. "
                                f"Would you like to update the Hubspot value to {client.state}?"
-                               f"Type 'y' for yes or 'n' for no.").lower()
+                               f"Type 'y' for yes or 'n' for no. ").lower().strip()
                 if answer == 'y':
                     print("Very well, updating state...")
                     try:
@@ -666,7 +686,8 @@ def manual_mode(client, contact, firstname, lastname):
                             print(f"{client.group} already in {prosplist}. Moving on...")
                         else:
                             answer = input(f"{client.group} not found in {prosplist}.\nWould you like to append "
-                                           f"{client.group} to the list? Type 'y' for yes or 'n' for no. ").lower()
+                                           f"{client.group} to the list? Type 'y' for yes or 'n' for no."
+                                           f" ").lower().strip()
                             if answer == 'y':
                                 print(f"Very well, adding {client.group} to {prosplist}...")
                                 try:
@@ -692,7 +713,7 @@ def manual_mode(client, contact, firstname, lastname):
                         else:
                             answer = input(f"{client.group} is not equal to {contact.properties['facility_tour']}."
                                            f"Would you like to append {client.group} to the list? "
-                                           f"Type 'y' for yes or 'n' for no. ").lower()
+                                           f"Type 'y' for yes or 'n' for no. ").lower().strip()
                             if answer == 'y':
                                 try:
                                     new_info = contact.properties['facility_tour'] + f";{client.group}"
@@ -739,7 +760,7 @@ def manual_mode(client, contact, firstname, lastname):
                               f"\nMoving on... ")
                     else:
                         answer = input(f"{client.group} is not in {grouplist}.\nWould you like to append "
-                                       f"{client.group} to the list?\nType 'y' for yes or 'n' for no. ").lower()
+                                       f"{client.group} to the list?\nType 'y' for yes or 'n' for no. ").lower().strip()
                         if answer == 'y':
                             print("Very well, updating the group list...")
                             try:
@@ -766,7 +787,7 @@ def manual_mode(client, contact, firstname, lastname):
                         answer = input(f"{client.group} does not match the Hubspot property value of "
                                        f"{contact.properties['clinics_classes']}.\nWould you like to append"
                                        f"{client.group} to {contact.properties['clinics_classes']}?\nType 'y' for yes"
-                                       f"or 'n' for no. ").lower()
+                                       f"or 'n' for no. ").lower().strip()
                         if answer == 'y':
                             print(f"Very well, appending {client.group} to {contact.properties['clinics_classes']}...")
                             try:
