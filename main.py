@@ -20,24 +20,21 @@ VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 We
                 'Pick-Up Adults (30+)']
 
 answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration program!\n\n"
-               "Would you like to run in Safe Mode (recommended)? (type 'y' for yes or 'n' for no)\n\n"
-               "(Safe Mode requires a manual approval for completely NEW contacts to be created within Hubspot"
-               " and for any property to be updated.\nIf you decline, the script will run in Automatic Mode, and all "
-               "new contacts will be automatically created.)\n").lower()
+               "Press 'y' to begin the contact entering process or press 'c' to congfigure new groups.\n\n").lower()
 
 if answer == 'y':
     is_manual = True
     print("Running in Manual...")
-elif answer == 'n':
+elif answer == 'c':
     is_manual = False
-    print("Running in automatic...")
+    print("Under construction...")
 
 api_client = HubSpot(access_token=HUBSPOT_ACCESS_TOKEN)
 
-# TODO: Make a func that will automatically update existing contacts (manual func w/out inputs)
+# TODO: Make a func that will allow you to configure custom groups
 
 
-# TODO: Create feature for adding new contacts into Hubspot
+# TODO: Create feature for adding new contacts into Hubspot [COMPLETE]
 def newbies(client, firstname, lastname):
     bday = client.childdob
     if isadult(bday):
@@ -69,6 +66,44 @@ def newbies(client, firstname, lastname):
                 api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
 
                 print(f"Successfully created Hubspot contact for new client {client.name} at {client.email}!!!")
+                print("Here is the full contact Data")
+                print(f"First Name: {firstname}")
+                print(f"Last Name: {lastname}")
+                print(f"Email {client.email}")
+                print(f"Mobile Phone: {client.phone}")
+                print(f"Address: {client.address}")
+                print(f"City: {client.city}")
+                print(f"State: {client.state}")
+                print(f"Zip: {client.zip}")
+                print(f"Kid's Name(s): {client.childname}")
+                print(f"Kid's YoB: {client.childdob}")
+                print(f"Group: {client.group}")
+
+            except ApiException as e:
+                print(f"Failed to create contact! Error: {e}")
+
+        elif client.group == "Prospect":
+            try:
+                contact_data = SimplePublicObjectInput(
+                    properties={
+                        "firstname": firstname,
+                        "lastname": lastname,
+                        "email": client.email,
+                        "mobilephone": client.phone,
+                        "kid_s_year_s_of_birth": client.childdob,
+                        "kids_names": client.childname,
+                        "address": client.address,
+                        "city": client.city,
+                        "zip": client.zip,
+                        "state": client.state,
+                        'former_member': client.group,
+                        'hubspot_owner_id': 62963475
+                    }
+                )
+                api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
+
+                print(f"Successfully created Hubspot contact for new client {client.name} at {client.email}!!!")
+
                 print("Here is the full contact Data")
                 print(f"First Name: {firstname}")
                 print(f"Last Name: {lastname}")
@@ -161,7 +196,7 @@ def newbies(client, firstname, lastname):
             print(f"Failed to create contact! Error: {e}")
 
 
-# TODO: Make a Manual Mode that requires permission to update contacts [TODO]
+# TODO: Make a Manual Mode that requires permission to update contacts [COMPLETE]
 def manual_mode(client, contact, firstname, lastname):
     contact_id = contact.id
 
@@ -733,23 +768,43 @@ def manual_mode(client, contact, firstname, lastname):
                             else:
                                 print("Very well, moving on...")
                 else:
-                    print(f"The prospective property in Hubspot is empty for {client.name}. "
-                          f"Adding {client.group} to the property...")
-                    try:
-                        new_info = client.group
-                        updated_info = SimplePublicObjectInput(
-                            properties={
-                                'facility_tour': new_info
-                            }
-                        )
-                        api_client.crm.contacts.basic_api.update(
-                            contact_id=contact_id,
-                            simple_public_object_input=updated_info
-                        )
-                        print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
-                              f"profile for {client.name}!\nMoving on...")
-                    except ApiException as e:
-                        print(f"Group not updated. Error: {e}")
+                    if client.group != 'Prospect':
+                        print(f"The prospective property in Hubspot is empty for {client.name}. "
+                              f"Adding {client.group} to the property...")
+                        try:
+                            new_info = client.group
+                            updated_info = SimplePublicObjectInput(
+                                properties={
+                                    'facility_tour': new_info
+                                }
+                            )
+                            api_client.crm.contacts.basic_api.update(
+                                contact_id=contact_id,
+                                simple_public_object_input=updated_info
+                            )
+                            print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                                      f"profile for {client.name}!\nMoving on...")
+                        except ApiException as e:
+                                print(f"Group not updated. Error: {e}")
+                    else:
+                        if client.group == 'Prospect':
+                            print(f"{client.name} filled out the Member Info Form, and Membership Status property is "
+                                  f"empty. Attempting to add 'Prospect' to Member Info Property...")
+                            try:
+                                new_info = client.group
+                                updated_info = SimplePublicObjectInput(
+                                    properties={
+                                        'former_member': new_info
+                                    }
+                                )
+                                api_client.crm.contacts.basic_api.update(
+                                    contact_id=contact_id,
+                                    simple_public_object_input=updated_info
+                                )
+                                print(f"'Propspect' status successfully added. Membership property for {client.group} "
+                                      f"added to Hubspot profile for {client.name}!\nMoving on...")
+                            except ApiException as e:
+                                print(f"Group not updated. Error: {e}")
 
             elif contact.properties['clinics_classes'] is not None:
                 hubspotgroup = contact.properties['clinics_classes']
@@ -810,21 +865,53 @@ def manual_mode(client, contact, firstname, lastname):
             else:
                 print(f"No values entered in the Hubspot groups property for {client.name}. "
                       f"Adding {client.group} to property...")
-                try:
-                    new_info = client.group
-                    updated_info = SimplePublicObjectInput(
-                        properties={
-                            'clinics_classes': new_info
-                        }
-                    )
-                    api_client.crm.contacts.basic_api.update(
-                        contact_id=contact_id,
-                        simple_public_object_input=updated_info
-                    )
-                    print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
-                          f"profile for {client.name}!\nMoving on...")
-                except ApiException as e:
-                    print(f"Skipping update. Error: {e}")
+                new_info = client.group
+                if new_info not in ["Party Attendee",
+                                    "Prospect", "Free Pass Registration- Adult Basketball Fitness Class"]:
+                    try:
+                        updated_info = SimplePublicObjectInput(
+                            properties={
+                                'clinics_classes': new_info
+                            }
+                        )
+                        api_client.crm.contacts.basic_api.update(
+                            contact_id=contact_id,
+                            simple_public_object_input=updated_info
+                        )
+                        print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                              f"profile for {client.name}!\nMoving on...")
+                    except ApiException as e:
+                        print(f"Skipping update. Error: {e}")
+                elif new_info == 'Propsect':
+                    try:
+                        updated_info = SimplePublicObjectInput(
+                            properties={
+                                'former_member': new_info
+                            }
+                        )
+                        api_client.crm.contacts.basic_api.update(
+                            contact_id=contact_id,
+                            simple_public_object_input=updated_info
+                        )
+                        print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                              f"profile for {client.name}!\nMoving on...")
+                    except ApiException as e:
+                        print(f"Skipping update. Error: {e}")
+                else:
+                    try:
+                        updated_info = SimplePublicObjectInput(
+                            properties={
+                                'facility_tour': new_info
+                            }
+                        )
+                        api_client.crm.contacts.basic_api.update(
+                            contact_id=contact_id,
+                            simple_public_object_input=updated_info
+                        )
+                        print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
+                              f"profile for {client.name}!\nMoving on...")
+                    except ApiException as e:
+                        print(f"Skipping update. Error: {e}")
         else:
             print(f"Client group {client.group} unconfigured to be automatically added.\n"
                   f"Property must be configured interally in Python or added manually through Hubspot. \n"
