@@ -4,4 +4,5 @@ env/
 *.iml
 *.iws
 .idea/
-.idea_modules/
+.idea_modules/groups.txt
+groups.txt
