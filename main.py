@@ -40,8 +40,8 @@ def groupmaker():
 
 
 answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration program!\n\n"
-               "Press 'y' to begin the contact entering process or press 'c' to congfigure new groups.\n\nNOTICE:"
-               "REMEMBER TO EMPTY 'groups.txt' BEFORE RUNNING!!!!").lower()
+               "Press 'y' to begin the contact entering process or press 'c' to congfigure new groups.\n\nNOTICE: "
+               "REMEMBER TO EMPTY 'groups.txt' BEFORE RUNNING!!!!\n").lower()
 
 if answer == 'y':
     is_manual = True
