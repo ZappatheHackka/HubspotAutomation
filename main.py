@@ -22,7 +22,21 @@ VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 We
 
 # TODO: Make a func that will allow you to configure custom groups
 def groupmaker():
-    print("Made group xD")
+    internalcode = input("Please enter the Hubspot internal code of the group you wish to configure.\n\nHINT:"
+                         "To find internal codes go to Hubspot and navigate to "
+                         "Contacts> Actions> Edit Properties> and search for 'Clinics & Classes', "
+                         "then click 'Clinics & Classes' and navigate to 'Field Types' to see internal "
+                         "codes of all entered groups.\n")
+    VALID_GROUPS.append(internalcode)
+    print("NOTICE: Ensure the internal code matches the EZ Facility group name, or else manual configuration will be"
+          "required.\n")
+    ans = input("Would you like to begin contact entry? Type 'y' or 'n'.\n").lower()
+    if ans == 'n':
+        print("Exiting program.")
+        exit()
+    elif ans == 'y':
+        return True
+    
 
 
 answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration program!\n\n"
@@ -31,9 +45,9 @@ answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration progr
 
 if answer == 'y':
     is_manual = True
-    print("Running in Manual...")
+    print("Running...")
 elif answer == 'c':
-    groupmaker()
+    is_manual = groupmaker()
 
 api_client = HubSpot(access_token=HUBSPOT_ACCESS_TOKEN)
 
@@ -979,7 +993,7 @@ def isadult(bday):
 
 # TODO: Make func that translates "Group" values to internal Hubspot correlatives [COMPLETE]
 def internalcode(group):
-    if group == 'Junior Hoopers (Ages 4-6)':
+    if group == '2025 Junior Hoopers (Ages 4-6)':
         group = "2021Junior Hoopers"
         return group
     elif group == 'Robbinsville Coaches Training':
@@ -1006,7 +1020,7 @@ def infograbber(items):  # Creating function to handle email formatting discrepa
         if line == 'Group:':
             group = items[index]
             group = group[7:].strip()
-            if group == 'ID Hoops Skills Programs' or group == 'Weekday Clinics':  # Reformatting for Sunday & Weekdays
+            if group == '2025 ID Hoops Sunday Skills Programs' or group == 'Weekday Clinics':  # Reformatting for Sunday & Weekdays
                 new_id = index - 3
                 true_group = items[new_id]
                 true_group = true_group.split()
