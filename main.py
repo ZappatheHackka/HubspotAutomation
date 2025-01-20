@@ -180,7 +180,7 @@ def newbies(client, firstname, lastname):
         print(f"NOTICE!!!!\nThe group {client.group} is not configured to be added programmatically,"
               f" and will be omitted from the contact creation.\nEither tag the client under the group {client.group} "
               f"manually in Hubspot, or have it configured internally. Client and group written to 'groups.txt' file.")
-        with open('groups.txt', 'a') as file:
+        with open('groups.txt', 'a', encoding='utf-16') as file:
             file.write(f"{client.email}: {client.group}\n")
         try:
             contact_data = SimplePublicObjectInput(
@@ -340,7 +340,7 @@ def manual_mode(client, contact, firstname, lastname):
 
     if client.childdob:
         if isadult(client.childdob):
-            if contact.properties['kid_s_year_s_of_birth'].strip() is None:
+            if contact.properties['kid_s_year_s_of_birth'] is None:
                 answer = input(f"No age is set--update age to Adult for {client.name}?\n"
                                f"Type 'y' for yes or 'n' for no. ").lower().strip()
                 if answer == 'y':
@@ -971,7 +971,7 @@ def manual_mode(client, contact, firstname, lastname):
             print(f"Client group {client.group} unconfigured to be automatically added.\n"
                   f"Property must be configured interally in Python or added manually through Hubspot. Writing client "
                   f"info to 'groups.txt' file\nSkipping group for now...")
-            with open('groups.txt', 'a') as file:
+            with open('groups.txt', 'a', encoding='utf-16') as file:
                 file.write(f"{client.email}: {client.group}\n")
 
 
@@ -999,7 +999,7 @@ def internalcode(group):
     elif group == 'Robbinsville Coaches Training':
         group = "Robbinsville Coaches Clinic"
         return group
-    elif group == "School's Out ID Hoops Lab":
+    elif group == "2025 School's Out ID Hoops Lab":
         group = "Schools Out"
         return group
     elif group == 'Membership Info Form':
