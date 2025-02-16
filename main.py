@@ -17,7 +17,7 @@ HOST = "idhoops.com"
 VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 Weekday Shooting & Dribbling',
                 'Level 2 Weekday Shooting & Dribbling', 'Party Attendee', 'Prospect', '2021Junior Hoopers',
                 'Robbinsville Coaches Clinic', 'Schools Out', 'Free Pass Registration- Adult Basketball Fitness Class',
-                'Pick-Up Adults (30+)']
+                'Pick-Up Adults (30+)', '2021 Summer Camp']
 
 
 # TODO: Make a func that will allow you to configure custom groups
@@ -1004,6 +1004,9 @@ def internalcode(group):
         return group
     elif group == 'Membership Info Form':
         group = "Prospect"
+        return group
+    elif group == '2025 Summer Camps':
+        group = '2021 Summer Camp'
         return group
     elif "Birthday" in group.split(" ") and "Party" in group.split(" "):
         group = "Party Attendee"
