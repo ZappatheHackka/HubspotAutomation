@@ -195,7 +195,7 @@ def newbies(client, firstname, lastname):
                     "city": client.city,
                     "zip": client.zip,
                     "state": client.state,
-                    'hubspot_owner_id': 62963475
+                    'hubspot_owner_id': os.getenv("HUBSPOT_OWNER_ID")
                 }
             )
             api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
