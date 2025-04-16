@@ -42,6 +42,6 @@ Built and maintained by **Christopher Cottone**.
 Used in production at **Inner Drive Hoops** to streamline client onboarding and marketing workflows.
 
 📫 [Email Me](mailto:chriscottone1@gmail.com.com)  
-💼 [LinkedIn]([https://www.linkedin.com/in/your-profile](https://www.linkedin.com/in/christopher-cottone-b9820928a/?trk=opento_sprofile_topcard))  
+💼 [LinkedIn](https://www.linkedin.com/in/christopher-cottone-b9820928a/?trk=opento_sprofile_topcard)  
 
 Currently seeking **junior/entry-level roles** in software development, automation, or technical support. Looking to build and learn as much as I can!
