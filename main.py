@@ -80,7 +80,7 @@ def newbies(client, firstname, lastname):
                         "zip": client.zip,
                         "state": client.state,
                         'clinics_classes': client.group,
-                        'hubspot_owner_id': 62963475
+                        'hubspot_owner_id': os.getenv("HUBSPOT_OWNER_ID")
                     }
                 )
                 api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
@@ -117,7 +117,7 @@ def newbies(client, firstname, lastname):
                         "zip": client.zip,
                         "state": client.state,
                         'former_member': client.group,
-                        'hubspot_owner_id': 62963475
+                        'hubspot_owner_id': os.getenv("HUBSPOT_OWNER_ID")
                     }
                 )
                 api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
@@ -154,7 +154,7 @@ def newbies(client, firstname, lastname):
                         "zip": client.zip,
                         "state": client.state,
                         'facility_tour': client.group,
-                        'hubspot_owner_id': 62963475
+                        'hubspot_owner_id': os.getenv("HUBSPOT_OWNER_ID")
                     }
                 )
                 api_client.crm.contacts.basic_api.create(simple_public_object_input_for_create=contact_data)
