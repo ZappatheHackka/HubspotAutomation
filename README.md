@@ -1,6 +1,6 @@
 # 🏀 Inner Drive Hoops: HubSpot Auto-Registration Script
 
-A Python-based automation tool that scrapes registration emails, extracts client data, and updates HubSpot CRM accordingly — streamlining marketing contact creation and reducing manual data entry.
+A Python-based automation tool that scrapes registration emails, extracts client data, and updates HubSpot CRM accordingly — streamlining marketing contact creation and mostly eliminating manual data entry.
 
 Used weekly in production since late 2024, this script transformed hours of grunt work into ~90 seconds of effort per week.
 
@@ -17,6 +17,10 @@ Used weekly in production since late 2024, this script transformed hours of grun
   - Address, phone, birthdate, and membership status fields  
 - Offers an **interactive manual mode** for data review and updates  
 - Logs unrecognized groups to a `.txt` file for manual follow-up  
+
+![Updating Existing Client Data](NameEdit.png)
+![Creating New Contact](ContactCreate.png)
+![Hubspot Results](HubspotResults.png)
 
 ---
 
