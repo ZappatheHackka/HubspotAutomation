@@ -24,10 +24,15 @@ Used weekly in production since late 2024, this script transformed hours of grun
 
 ![Creating New Contact](ContactCreate.png)
 
+  - Creating a new contact
+
 ![Hubspot Results](HubspotResults.png)
+
+  - Previously created contacts in Hubspot (names edited)
 
 ![Updating Existing Client Data](NameEdit.png)
 
+  - Updating existing client info
 ---
 
 ## ⚙️ Tech Stack
