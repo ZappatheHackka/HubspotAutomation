@@ -21,11 +21,13 @@ Used weekly in production since late 2024, this script transformed hours of grun
 ---
 
 ## Samples
-![Updating Existing Client Data](NameEdit.png)
+
+![Creating New Contact](ContactCreate.png)
 
 ![Hubspot Results](HubspotResults.png)
 
-![Creating New Contact](ContactCreate.png)
+![Updating Existing Client Data](NameEdit.png)
+
 ---
 
 ## ⚙️ Tech Stack
