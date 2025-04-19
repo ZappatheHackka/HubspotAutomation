@@ -22,15 +22,15 @@ Used weekly in production since late 2024, this script transformed hours of grun
 
 ## Samples
 
- - Creating a new contact
+<sub>Creating a new contact</sub>
 
 ![Creating New Contact](ContactCreate.png)
 
- - Previously created contacts showing up in Hubspot (names edited)
+<sub>Previously created contacts showing up in Hubspot (names edited)</sub>
  
 ![Hubspot Results](HubspotResults.png)
 
-  - Updating existing client info
+<sub>Updating existing client info</sub>
 
 ![Updating Existing Client Data](NameEdit.png)
 
