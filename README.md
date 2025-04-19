@@ -18,10 +18,14 @@ Used weekly in production since late 2024, this script transformed hours of grun
 - Offers an **interactive manual mode** for data review and updates  
 - Logs unrecognized groups to a `.txt` file for manual follow-up  
 
+---
+
+## Samples
 ![Updating Existing Client Data](NameEdit.png)
-![Creating New Contact](ContactCreate.png)
+
 ![Hubspot Results](HubspotResults.png)
 
+![Creating New Contact](ContactCreate.png)
 ---
 
 ## ⚙️ Tech Stack
