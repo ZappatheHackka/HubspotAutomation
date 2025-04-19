@@ -26,7 +26,7 @@ Used weekly in production since late 2024, this script transformed hours of grun
 
 ![Creating New Contact](ContactCreate.png)
 
- - Previously created contacts in Hubspot (names edited)
+ - Previously created contacts showing up in Hubspot (names edited)
  
 ![Hubspot Results](HubspotResults.png)
 
