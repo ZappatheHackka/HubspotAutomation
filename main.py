@@ -93,7 +93,7 @@ def newbies(client, firstname, lastname):
                 print("Here is the full contact Data")
                 print(f"First Name: {firstname}")
                 print(f"Last Name: {lastname}")
-                print(f"Email {client.email}")
+                print(f"Email: {client.email}")
                 print(f"Mobile Phone: {client.phone}")
                 print(f"Address: {client.address}")
                 print(f"City: {client.city}")
@@ -131,7 +131,7 @@ def newbies(client, firstname, lastname):
                 print("Here is the full contact Data")
                 print(f"First Name: {firstname}")
                 print(f"Last Name: {lastname}")
-                print(f"Email {client.email}")
+                print(f"Email: {client.email}")
                 print(f"Mobile Phone: {client.phone}")
                 print(f"Address: {client.address}")
                 print(f"City: {client.city}")
@@ -168,7 +168,7 @@ def newbies(client, firstname, lastname):
                 print("Here is the full contact Data")
                 print(f"First Name: {firstname}")
                 print(f"Last Name: {lastname}")
-                print(f"Email {client.email}")
+                print(f"Email: {client.email}")
                 print(f"Mobile Phone: {client.phone}")
                 print(f"Address: {client.address}")
                 print(f"City: {client.city}")
@@ -209,7 +209,7 @@ def newbies(client, firstname, lastname):
             print("Here is the full contact Data")
             print(f"First Name: {firstname}")
             print(f"Last Name: {lastname}")
-            print(f"Email {client.email}")
+            print(f"Email: {client.email}")
             print(f"Mobile Phone: {client.phone}")
             print(f"Address: {client.address}")
             print(f"City: {client.city}")
@@ -1191,4 +1191,3 @@ def contactmaker(all_clients):
 
 
 contactmaker(all_clients)
-
