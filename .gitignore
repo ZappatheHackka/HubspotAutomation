@@ -6,3 +6,4 @@ env/
 .idea/
 .idea_modules/groups.txt
 groups.txt
+.env

@@ -1,5 +1,6 @@
 import datetime
 import os
+from dotenv import load_dotenv
 from dateutil.relativedelta import relativedelta
 import email.generator
 from imapclient import IMAPClient
@@ -8,6 +9,9 @@ from hubspot import HubSpot
 from hubspot.crm.contacts import ApiException, Filter, FilterGroup, PublicObjectSearchRequest, SimplePublicObjectInput
 
 # TODO: [COMPLETE] Authorize w/ Hubspot-They have a library!
+
+load_dotenv()
+
 HUBSPOT_ACCESS_TOKEN = os.environ['HUBSPOT_ACCESS_TOKEN']
 HUBSPOT_SECRET = os.environ['HUBSPOT_SECRET']
 USER = os.environ['WORK_EMAIL']
