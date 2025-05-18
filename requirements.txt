@@ -1,0 +1,5 @@
+hubspot-api-client==9.0.0
+dotenv~=0.9.9
+IMAPClient~=3.0.1
+python-dotenv~=1.1.0
+python-dateutil~=2.9.0.post0
