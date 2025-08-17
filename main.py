@@ -7,6 +7,8 @@ from imapclient import IMAPClient
 from dataclasses import dataclass
 from hubspot import HubSpot
 from hubspot.crm.contacts import ApiException, Filter, FilterGroup, PublicObjectSearchRequest, SimplePublicObjectInput
+import html
+import re
 
 # TODO: [COMPLETE] Authorize w/ Hubspot-They have a library!
 
@@ -22,6 +24,26 @@ VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 We
                 'Level 2 Weekday Shooting & Dribbling', 'Party Attendee', 'Prospect', '2021Junior Hoopers',
                 'Robbinsville Coaches Clinic', 'Schools Out', 'Free Pass Registration- Adult Basketball Fitness Class',
                 'Pick-Up Adults (30+)', '2021 Summer Camp']
+
+
+def parse_html_email(html_content):
+    """Parse HTML email content and extract registration details"""
+    # Remove HTML entities and tags
+    text_content = html.unescape(html_content)
+    # Remove HTML tags but keep <br/> as newlines
+    text_content = re.sub(r'<br\s*/?>', '\n', text_content)
+    text_content = re.sub(r'<[^>]+>', '', text_content)
+
+    # Split into lines and clean up
+    lines = text_content.split('\n')
+    cleaned_lines = []
+
+    for line in lines:
+        line = line.strip()
+        if line:  # Only keep non-empty lines
+            cleaned_lines.append(line)
+
+    return cleaned_lines
 
 
 # TODO: Make a func that will allow you to configure custom groups
@@ -40,7 +62,6 @@ def groupmaker():
         exit()
     elif ans == 'y':
         return True
-    
 
 
 answer = input("Welcome to the Inner Drive Hoops Hubspot auto-registration program!\n\n"
@@ -229,7 +250,7 @@ def manual_mode(client, contact, firstname, lastname):
     # UPDATING FIRST NAME
 
     if firstname == contact.properties['firstname']:
-        print(f'Submitted first name {firstname} is equal to Hubspot first name {contact.properties['firstname']},'
+        print(f'Submitted first name {firstname} is equal to Hubspot first name {contact.properties["firstname"]},'
               f' moving on...')
     else:
         answer = input(f"{firstname} does not match the Hubspot record of {contact.properties['firstname']}.\n"
@@ -257,7 +278,7 @@ def manual_mode(client, contact, firstname, lastname):
     # UPDATING LAST NAME
     if lastname:
         if lastname == contact.properties['lastname']:
-            print(f'Submitted last name {lastname} is equal to Hubspot last name {contact.properties['lastname']}, '
+            print(f'Submitted last name {lastname} is equal to Hubspot last name {contact.properties["lastname"]}, '
                   f'moving on...')
         else:
             answer = input(f"{lastname} does not match the Hubspot record of {contact.properties['lastname']}.\n"
@@ -286,7 +307,7 @@ def manual_mode(client, contact, firstname, lastname):
     # UPDATING EMAIL
 
     if client.email == contact.properties['email']:
-        print(f'{client.email} is equal to Hubspot email value {contact.properties['email']}, moving on...')
+        print(f'{client.email} is equal to Hubspot email value {contact.properties["email"]}, moving on...')
     else:
         answer = input(f"{client.email} does not match the Hubspot record of {contact.properties['email']}.\n"
                        f"Would you like to change the 'email' value to {client.email}?\n"
@@ -314,7 +335,7 @@ def manual_mode(client, contact, firstname, lastname):
 
     if client.phone:
         if client.phone == contact.properties['mobilephone']:
-            print(f'{client.phone} is equal to Hubspot phone value {contact.properties['mobilephone']}, moving on...')
+            print(f'{client.phone} is equal to Hubspot phone value {contact.properties["mobilephone"]}, moving on...')
         else:
             answer = input(f"{client.phone} does not match the Hubspot record of {contact.properties['mobilephone']}.\n"
                            f"Would you like to change the 'mobilephone' value to {client.phone}?\n"
@@ -763,8 +784,8 @@ def manual_mode(client, contact, firstname, lastname):
                                     simple_public_object_input=updated_info
                                 )
                                 print(f"Prospect member status successfully added. Propspect tag for "
-                                        f"{client.group} added to Hubspot "
-                                        f"profile for {client.name}!\nMoving on...")
+                                      f"{client.group} added to Hubspot "
+                                      f"profile for {client.name}!\nMoving on...")
                             except ApiException as e:
                                 print(f"Group not updated. Error: {e}")
                         else:
@@ -787,7 +808,7 @@ def manual_mode(client, contact, firstname, lastname):
                     except ApiException as e:
                         print(f"Group not updated. Error: {e}")
             elif (client.group == 'Party Attendee' or
-                    client.group == 'Free Pass Registration- Adult Basketball Fitness Class'):
+                  client.group == 'Free Pass Registration- Adult Basketball Fitness Class'):
                 if contact.properties['facility_tour'] is not None:
                     try:
                         prosplist = contact.properties['facility_tour'].split(';')
@@ -857,9 +878,9 @@ def manual_mode(client, contact, firstname, lastname):
                                 simple_public_object_input=updated_info
                             )
                             print(f"Group successfully added. Group tag for {client.group} added to Hubspot "
-                                      f"profile for {client.name}!\nMoving on...")
+                                  f"profile for {client.name}!\nMoving on...")
                         except ApiException as e:
-                                print(f"Group not updated. Error: {e}")
+                            print(f"Group not updated. Error: {e}")
                     else:
                         if client.group == 'Prospect':
                             print(f"{client.name} filled out the Member Info Form, and Membership Status property is "
@@ -997,7 +1018,7 @@ def isadult(bday):
 
 # TODO: Make func that translates "Group" values to internal Hubspot correlatives [COMPLETE]
 def internalcode(group):
-    if group == '2025 Junior Hoopers (Ages 4-6)':
+    if group == '2025 Junior Hoopers (Ages 4-6)' or group == '2025 Junior Hoopers (Ages 4-7)':
         group = "2021Junior Hoopers"
         return group
     elif group == 'Robbinsville Coaches Training':
@@ -1127,17 +1148,26 @@ server.select_folder(folder="INBOX")
 
 # TODO: Fetch registration emails from roundcube in form of UIDs [COMPLETE]
 messages = server.search(['Subject', 'A NEW ONLINE REGISTRATION HAS BEEN SUBMITTED', 'Since', fetch_date], 'UTF8')
-
 # TODO: Loop through list of clients and create objects for each of them, adding said objects to a list [COMPLETE]
 for message in messages:
     ct_msg = server.fetch([message], ['RFC822'])
     msg = email.message_from_bytes(ct_msg[message][b'RFC822'])
+
+    # Handle both text/plain and text/html emails
     if msg.get_content_type() == 'text/plain':
-        # Looping through emails and contructing Contact() objects based on email contents
+        # Existing plain text handling
         body = msg.get_payload(decode=True).decode(msg.get_content_charset())
         body = body.split('\n')
         b_test = body[6].rstrip()
         infograbber(body)
+    elif msg.get_content_type() == 'text/html':
+        # New HTML email handling
+        print(f"Processing HTML email...")
+        html_body = msg.get_payload(decode=True).decode(msg.get_content_charset() or 'utf-8')
+        parsed_lines = parse_html_email(html_body)
+        infograbber(parsed_lines)
+    else:
+        print(f"Email with content type {msg.get_content_type()} is not supported.")
 
 
 # TODO Connect with Hubspot's API [COMPLETE], Ensure relevant properties are fetched [COMPLETE]
@@ -1188,6 +1218,7 @@ def contactmaker(all_clients):
                 print(f"An error occurred while searching for {client.name}: {e}")
         else:
             print(f"No valid filters provided for {client.name}.")
+
 
 
 contactmaker(all_clients)
