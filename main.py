@@ -23,7 +23,7 @@ HOST = "idhoops.com"
 VALID_GROUPS = ['2021 Skills Accelerator', '2021 Pure Fundamentals', 'Level 1 Weekday Shooting & Dribbling',
                 'Level 2 Weekday Shooting & Dribbling', 'Party Attendee', 'Prospect', '2021Junior Hoopers',
                 'Robbinsville Coaches Clinic', 'Schools Out', 'Free Pass Registration- Adult Basketball Fitness Class',
-                'Pick-Up Adults (30+)', '2021 Summer Camp']
+                'Pick-Up Adults (30+)', '2021 Summer Camp', 'Pickup Nights']
 
 
 def parse_html_email(html_content):
@@ -1018,16 +1018,22 @@ def isadult(bday):
 
 # TODO: Make func that translates "Group" values to internal Hubspot correlatives [COMPLETE]
 def internalcode(group):
-    if group == '2025 Junior Hoopers (Ages 4-6)' or group == '2025 Junior Hoopers (Ages 4-7)':
+    if group == '2026 Junior Hoopers (Ages 4-6)' or group == '2026 Junior Hoopers (Ages 4-7)':
         group = "2021Junior Hoopers"
+        return group
+    elif group ==  "Weekday Night Pick-up":
+        group = "Prospect"
         return group
     elif group == 'Robbinsville Coaches Training':
         group = "Robbinsville Coaches Clinic"
         return group
-    elif group == "2025 School's Out ID Hoops Lab":
+    elif group == "2026 School's Out Lab":
         group = "Schools Out"
         return group
-    elif group == 'Membership Info Form':
+    elif group == "Weekday Night Pick-up" or group == "Kosty's Pick-up":
+        group = 'Pickup Nights'
+        return group
+    elif group == 'Membership Info Form' or group == 'Registration/Waiver Form':
         group = "Prospect"
         return group
     elif group == '2025 Summer Camps':
@@ -1048,7 +1054,7 @@ def infograbber(items):  # Creating function to handle email formatting discrepa
         if line == 'Group:':
             group = items[index]
             group = group[7:].strip()
-            if group == '2025 ID Hoops Sunday Skills Programs' or group == 'Weekday Clinics':  # Reformatting for Sunday & Weekdays
+            if group == '2026 ID Hoops Sunday Skills Programs' or group == '2026 Weekday Clinics':  # Reformatting for Sunday & Weekdays
                 new_id = index - 3
                 true_group = items[new_id]
                 true_group = true_group.split()
@@ -1057,13 +1063,12 @@ def infograbber(items):  # Creating function to handle email formatting discrepa
                 elif 'Fundamentals' in true_group:
                     group = '2021 Pure Fundamentals'
                 elif 'Level' in true_group:
+                    print(true_group)
                     id = true_group.index('Level')
                     if true_group[id + 1] == '1':
-                        if true_group[id + 2] == 'Shooting':
-                            group = 'Level 1 Weekday Shooting & Dribbling'
+                        group = 'Level 1 Weekday Shooting & Dribbling'
                     elif true_group[id + 1] == '2':
-                        if true_group[id + 2] == 'Shooting':
-                            group = 'Level 2 Weekday Shooting & Dribbling'
+                        group = 'Level 2 Weekday Shooting & Dribbling'
             group = internalcode(group)
             name = items[index + 1]
             name = name[9:].strip()
@@ -1139,7 +1144,7 @@ all_clients = []
 
 # Pick a date when the fetching should begin (1 week from present??)
 date = datetime.datetime.now()
-fetch_date = date - relativedelta(weeks=1)
+fetch_date = date - relativedelta(weeks=4)
 fetch_date = fetch_date.strftime('%d-%b-%Y')
 
 server = IMAPClient(host=HOST, port=PORT, use_uid=True)
